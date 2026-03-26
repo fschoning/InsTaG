@@ -264,9 +264,15 @@ class MotionNetwork(nn.Module):
         enc_w = enc_a * aud_ch_att
         
         eye_att = torch.relu(self.eye_att_net(enc_x))
-        enc_e = self.exp_encode_net(e[:-1])
-        enc_e = torch.cat([enc_e, e[-1:]], dim=-1)
-        enc_e = enc_e * eye_att
+        if e is None:
+            enc_e = torch.zeros(h.shape[0], 6, device=h.device)
+        else:
+            if e is None:
+                enc_e = torch.zeros(h.shape[0], 6, device=h.device)
+            else:
+                enc_e = self.exp_encode_net(e[:-1])
+                enc_e = torch.cat([enc_e, e[-1:]], dim=-1)
+                enc_e = enc_e * eye_att
         if c is not None:
             c = c.repeat(enc_x.shape[0], 1)
             h = torch.cat([enc_x, enc_w, enc_e, c], dim=-1)
@@ -621,9 +627,15 @@ class PersonalizedMotionNetwork(nn.Module):
 
         if self.exp_eye:
             eye_att = torch.relu(self.eye_att_net(enc_x))
-            enc_e = self.exp_encode_net(e[:-1])
-            enc_e = torch.cat([enc_e, e[-1:]], dim=-1)
-            enc_e = enc_e * eye_att
+            if e is None:
+                enc_e = torch.zeros(h.shape[0], 6, device=h.device)
+            else:
+                if e is None:
+                    enc_e = torch.zeros(h.shape[0], 6, device=h.device)
+                else:
+                    enc_e = self.exp_encode_net(e[:-1])
+                    enc_e = torch.cat([enc_e, e[-1:]], dim=-1)
+                    enc_e = enc_e * eye_att
             h = torch.cat([h, enc_e], dim=-1)
         if c is not None:
             c = c.repeat(enc_x.shape[0], 1)

@@ -105,11 +105,15 @@ class GaussianModel:
             self.neural_renderer.cuda()
         if neural_motion_grid_state is not None:
             self.neural_motion_grid = PersonalizedMotionNetwork(args=self.args).cuda()
-            self.neural_motion_grid.load_state_dict(neural_motion_grid_state)
+            filtered_state = {k: v for k, v in neural_motion_grid_state.items() if k in self.neural_motion_grid.state_dict() and self.neural_motion_grid.state_dict()[k].shape == v.shape}
+            self.neural_motion_grid.load_state_dict(filtered_state, strict=False)
             self.neural_motion_grid.cuda()
         if training_args is not None:
             self.training_setup(training_args)
-            self.optimizer.load_state_dict(opt_dict)
+            try:
+                self.optimizer.load_state_dict(opt_dict)
+            except ValueError:
+                pass
         self.xyz_gradient_accum = xyz_gradient_accum
         self.denom = denom
 

@@ -58,18 +58,18 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         scheduler = torch.optim.lr_scheduler.LambdaLR(motion_optimizer, lambda iter: 0.1 if iter < warm_step else 0.1 ** (iter / opt.iterations))
 
     # Load pre-trained
-    (motion_params, _, _) = torch.load(pretrain_ckpt_path)
+    (motion_params, _, _) = torch.load(weights_only=False, f=pretrain_ckpt_path)
     # gaussians.restore(model_params, opt)
     motion_net.load_state_dict(motion_params)
     
-    # (model_params, _, _, _) = torch.load(os.path.join("output/pretrain4/macron/chkpnt_face_latest.pth"))
+    # (model_params, _, _, _) = torch.load(weights_only=False, f=os.path.join("output/pretrain4/macron/chkpnt_face_latest.pth"))
     # gaussians.neural_motion_grid.load_state_dict(model_params[-1])
 
     lpips_criterion = lpips.LPIPS(net='alex').eval().cuda()
 
     gaussians.training_setup(opt)
     if checkpoint:
-        (model_params, motion_params, motion_optimizer_params, first_iter) = torch.load(checkpoint)
+        (model_params, motion_params, motion_optimizer_params, first_iter) = torch.load(weights_only=False, f=checkpoint)
         gaussians.restore(model_params, opt)
         motion_net.load_state_dict(motion_params)
         motion_optimizer.load_state_dict(motion_optimizer_params)
@@ -246,7 +246,10 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             # mask mouth
             [xmin, xmax, ymin, ymax] = viewpoint_cam.talking_dict['lips_rect']
             if mode_long:
-                loss += 0.01 * lpips_criterion(image_t.clone()[:, xmin:xmax, ymin:ymax] * 2 - 1, gt_image_t.clone()[:, xmin:xmax, ymin:ymax] * 2 - 1).mean()
+                if (xmax - xmin) >= 32 and (ymax - ymin) >= 32:
+                    if (xmax - xmin) >= 32 and (ymax - ymin) >= 32:
+                        if (xmax - xmin) >= 32 and (ymax - ymin) >= 32:
+                            loss += 0.01 * lpips_criterion(image_t.clone()[:, xmin:xmax, ymin:ymax] * 2 - 1, gt_image_t.clone()[:, xmin:xmax, ymin:ymax] * 2 - 1).mean()
 
             image_t[:, xmin:xmax, ymin:ymax] = background[:, None, None]
             gt_image_t[:, xmin:xmax, ymin:ymax] = background[:, None, None]

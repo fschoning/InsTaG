@@ -64,7 +64,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
     scheduler = torch.optim.lr_scheduler.LambdaLR(motion_optimizer, lambda iter: 0.1 if iter < warm_step else 0.5 ** (iter / opt.iterations))
     
     # Load pre-trained
-    (motion_params, _, _) = torch.load(pretrain_ckpt_path)
+    (motion_params, _, _) = torch.load(weights_only=False, f=pretrain_ckpt_path)
     # gaussians.restore(model_params, opt)
     motion_net.load_state_dict(motion_params)
 
@@ -82,12 +82,12 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
         motion_net_face = MotionNetwork(args=dataset).cuda()
         scene.gaussians_2 = gaussians_face
 
-    (model_params, motion_params, _, _) = torch.load(os.path.join(scene.model_path, "chkpnt_face_latest.pth"))
+    (model_params, motion_params, _, _) = torch.load(weights_only=False, f=os.path.join(scene.model_path, "chkpnt_face_latest.pth"))
     gaussians_face.restore(model_params, opt)
     motion_net_face.load_state_dict(motion_params)
 
     if checkpoint:
-        (model_params, motion_params, motion_optimizer_params, first_iter) = torch.load(checkpoint)
+        (model_params, motion_params, motion_optimizer_params, first_iter) = torch.load(weights_only=False, f=checkpoint)
         gaussians.restore(model_params, opt)
         motion_net.load_state_dict(motion_params)
         motion_optimizer.load_state_dict(motion_optimizer_params)

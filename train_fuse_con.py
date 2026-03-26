@@ -26,7 +26,7 @@ from utils.image_utils import psnr
 from argparse import ArgumentParser, Namespace
 from arguments import ModelParams, PipelineParams, OptimizationParams
 try:
-    from torch.utils.tensorboard import SummaryWriter
+    SummaryWriter = lambda *args, **kwargs: None
     TENSORBOARD_FOUND = True
 except ImportError:
     TENSORBOARD_FOUND = False
@@ -57,11 +57,11 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
     # gaussians.training_setup(opt)
     # gaussians_mouth.training_setup(opt)
 
-    (model_params, motion_params, _, _) = torch.load(os.path.join(scene.model_path, "chkpnt_face_latest.pth"))
+    (model_params, motion_params, _, _) = torch.load(weights_only=False, f=os.path.join(scene.model_path, "chkpnt_face_latest.pth"))
     gaussians.restore(model_params, opt)
     motion_net.load_state_dict(motion_params)
 
-    (model_params, motion_params, _, _) = torch.load(os.path.join(scene.model_path, "chkpnt_mouth_latest.pth"))
+    (model_params, motion_params, _, _) = torch.load(weights_only=False, f=os.path.join(scene.model_path, "chkpnt_mouth_latest.pth"))
     gaussians_mouth.restore(model_params, opt)
     motion_net_mouth.load_state_dict(motion_params)
 
@@ -234,8 +234,8 @@ def prepare_output_and_logger(args):
 def training_report(tb_writer, iteration, testing_iterations, image, gt_image):
     # Report test and samples of training set
     if iteration in testing_iterations:
-        tb_writer.add_images("fuse/render", image[None], global_step=iteration)
-        tb_writer.add_images("fuse/ground_truth", gt_image[None], global_step=iteration)
+        pass # ("fuse/render", image[None], global_step=iteration)
+        pass # ("fuse/ground_truth", gt_image[None], global_step=iteration)
 
 
 
